@@ -1,0 +1,1669 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0b1220">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>羽毛球打卡</title>
+<style>
+  :root{
+    --card:#141d2e;--card2:#1b2436;--line:#243049;
+    --text:#e8eefc;--muted:#8b9bb8;--accent:#22c55e;--blue:#3b82f6;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  [hidden]{display:none !important;}
+  html,body{margin:0;padding:0;}
+  body{
+    min-height:100vh;
+    background:radial-gradient(1200px 620px at 50% -12%, #1d3a5c 0%, #0b1220 58%) fixed;
+    color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+    padding:20px 16px calc(40px + env(safe-area-inset-bottom));
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:520px;margin:0 auto;}
+
+  .topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;}
+  .brand{font-size:16px;font-weight:700;letter-spacing:.3px;}
+  .yearnav{
+    display:flex;align-items:center;gap:4px;
+    background:var(--card);border:1px solid var(--line);
+    border-radius:999px;padding:4px 6px;
+  }
+  .yearnav .y{font-size:14px;font-weight:700;min-width:64px;text-align:center;font-variant-numeric:tabular-nums;}
+  .nav-btn{
+    width:28px;height:28px;border:none;border-radius:50%;cursor:pointer;
+    background:transparent;color:var(--muted);font-size:18px;line-height:1;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .nav-btn:active{background:var(--card2);}
+  .nav-btn:disabled{opacity:.25;}
+
+  .tabs{
+    display:flex;gap:4px;margin-top:16px;padding:4px;
+    background:var(--card);border:1px solid var(--line);border-radius:14px;
+  }
+  .tab{
+    flex:1;padding:10px;border:none;border-radius:10px;cursor:pointer;
+    background:transparent;color:var(--muted);font-family:inherit;
+    font-size:14px;font-weight:600;transition:.15s;
+  }
+  .tab.active{background:var(--card2);color:var(--text);}
+
+  .hero{
+    position:relative;overflow:hidden;
+    margin-top:14px;padding:26px 20px 22px;text-align:center;
+    background:linear-gradient(160deg,#1b2b45,#131c2c);
+    border:1px solid var(--line);border-radius:22px;
+  }
+  .hero::before{
+    content:"";position:absolute;left:50%;top:-120px;width:340px;height:260px;
+    transform:translateX(-50%);
+    background:radial-gradient(closest-side,rgba(34,197,94,.28),transparent);
+    pointer-events:none;
+  }
+  .hero-num{
+    position:relative;
+    font-size:66px;font-weight:800;line-height:1;letter-spacing:-2px;
+    background:linear-gradient(180deg,#ffffff,#7ee2a8);
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+    font-variant-numeric:tabular-nums;
+  }
+  .hero-label{margin-top:8px;font-size:13px;color:var(--muted);letter-spacing:.5px;}
+  .hero-sub{position:relative;margin-top:10px;font-size:12px;color:#7ee2a8;min-height:16px;}
+  .checkin-btn{
+    margin-top:18px;width:100%;padding:16px;border:none;border-radius:16px;
+    font-family:inherit;font-size:17px;font-weight:700;color:#06240f;cursor:pointer;
+    background:linear-gradient(180deg,#4ade80,#22c55e);
+    box-shadow:0 10px 26px -10px rgba(34,197,94,.9);
+    transition:transform .12s ease;
+  }
+  .checkin-btn:active{transform:scale(.975);}
+  .checkin-btn.done{
+    background:linear-gradient(180deg,#22304a,#1a2334);
+    color:#7ee2a8;box-shadow:none;
+    border:1px solid rgba(34,197,94,.45);
+  }
+
+  .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:12px;}
+  .stat{
+    background:var(--card);border:1px solid var(--line);
+    border-radius:14px;padding:12px 6px;text-align:center;
+  }
+  .stat b{display:block;font-size:19px;font-weight:700;font-variant-numeric:tabular-nums;}
+  .stat span{display:block;margin-top:3px;font-size:11px;color:var(--muted);}
+
+  .metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:14px;}
+  .card .metrics{margin-top:0;}
+  .card .metrics + .metrics{margin-top:10px;}
+  .metric{
+    background:var(--card);border:1px solid var(--line);
+    border-radius:16px;padding:15px 8px;text-align:center;
+  }
+  .card .metric{background:var(--card2);border-color:transparent;}
+  .metric b{display:block;font-size:22px;font-weight:800;letter-spacing:-.5px;font-variant-numeric:tabular-nums;}
+  .metric b small{font-size:11px;font-weight:600;color:var(--muted);margin-left:2px;letter-spacing:0;}
+  .metric span{display:block;margin-top:5px;font-size:11px;color:var(--muted);}
+
+  .card{
+    margin-top:12px;padding:16px;
+    background:var(--card);border:1px solid var(--line);border-radius:18px;
+  }
+  .card-title{
+    display:flex;align-items:center;justify-content:space-between;
+    font-size:12px;font-weight:600;color:var(--muted);
+    letter-spacing:.8px;margin-bottom:14px;
+  }
+  .card-title em{font-style:normal;color:#5f7ba6;font-weight:500;letter-spacing:0;}
+
+  .chart{display:flex;gap:3px;align-items:flex-end;}
+  .bar-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;}
+  .bar-wrap{position:relative;height:104px;width:100%;display:flex;align-items:flex-end;justify-content:center;}
+  .bar{
+    width:78%;max-width:22px;border-radius:5px 5px 2px 2px;position:relative;
+    background:linear-gradient(180deg,#4ade80,#16a34a);
+    transition:height .25s ease;
+  }
+  .bar.blue{background:linear-gradient(180deg,#60a5fa,#2563eb);}
+  .bar.amber{background:linear-gradient(180deg,#fbbf24,#f59e0b);}
+  .bar.empty{height:3px;background:#2a3550;border-radius:2px;width:60%;}
+  .bar-val{
+    position:absolute;top:-16px;left:50%;transform:translateX(-50%);
+    font-size:10px;font-weight:700;color:#8b9bb8;white-space:nowrap;
+  }
+  .bar-month{font-size:10px;color:var(--muted);font-variant-numeric:tabular-nums;}
+
+  .rows{display:flex;flex-direction:column;gap:11px;}
+  .row-item{display:grid;grid-template-columns:78px 1fr 52px;align-items:center;gap:10px;font-size:13px;}
+  .row-name{color:#c6d4ea;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .row-bar{height:9px;border-radius:5px;background:#1f2a40;overflow:hidden;}
+  .row-bar>div{height:100%;border-radius:5px;background:linear-gradient(90deg,#22c55e,#4ade80);transition:width .3s ease;}
+  .row-bar>div.blue{background:linear-gradient(90deg,#3b82f6,#60a5fa);}
+  .row-bar>div.amber{background:linear-gradient(90deg,#f59e0b,#fbbf24);}
+  .row-num{text-align:right;color:var(--muted);font-variant-numeric:tabular-nums;font-size:12px;}
+
+  .row{display:flex;gap:10px;}
+  input[type=date],input[type=text],input[type=number]{
+    width:100%;flex:1;min-width:0;
+    -webkit-appearance:none;appearance:none;
+    background:var(--card2);border:1px solid var(--line);border-radius:12px;
+    color:var(--text);font-family:inherit;font-size:15px;padding:12px 14px;
+  }
+  input:focus{outline:none;border-color:rgba(34,197,94,.6);}
+  input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.7);}
+  .btn-main{
+    flex:0 0 auto;padding:0 22px;border:none;border-radius:12px;cursor:pointer;
+    background:linear-gradient(180deg,#3b82f6,#2563eb);color:#fff;
+    font-family:inherit;font-size:15px;font-weight:700;
+  }
+  .btn-main:active{transform:scale(.97);}
+
+  #recordList{max-height:380px;overflow-y:auto;overscroll-behavior:contain;margin:-4px -2px;}
+  .rec-item{
+    display:flex;align-items:center;justify-content:space-between;gap:10px;
+    padding:12px 14px;margin:0 2px 8px;
+    background:var(--card2);border-radius:14px;cursor:pointer;
+    transition:background .15s;
+  }
+  .rec-item:active{background:#212c42;}
+  .rec-date{font-size:14px;font-weight:600;}
+  .rec-date .w{font-size:12px;color:var(--muted);font-weight:400;margin-left:6px;}
+  .rec-meta{margin-top:6px;display:flex;flex-wrap:wrap;gap:6px;}
+  .tag{font-size:11px;padding:3px 8px;border-radius:999px;background:#22304a;color:#9fb3d1;}
+  .tag.venue{background:rgba(34,197,94,.14);color:#7ee2a8;}
+  .tag.cal{background:rgba(245,158,11,.14);color:#fbbf24;}
+  .tag.hr{background:rgba(239,68,68,.14);color:#fca5a5;}
+  .tag.muted{color:#64748b;background:transparent;padding-left:0;}
+  .rec-del{
+    background:none;border:none;cursor:pointer;
+    color:#5b6b88;font-size:20px;line-height:1;padding:0 6px;
+  }
+  .rec-del:active{color:#ef4444;}
+  .empty{text-align:center;color:var(--muted);font-size:14px;padding:26px 0;line-height:1.8;}
+
+  .insight{display:flex;gap:10px;align-items:flex-start;font-size:13px;line-height:1.6;color:#c6d4ea;margin-bottom:10px;}
+  .insight:last-child{margin-bottom:0;}
+  .insight .dot{flex:0 0 auto;width:6px;height:6px;border-radius:50%;background:var(--accent);margin-top:7px;}
+  .insight b{color:#fff;font-weight:700;}
+
+  .compare{display:flex;align-items:center;justify-content:space-around;text-align:center;}
+  .compare .c-item b{display:block;font-size:26px;font-weight:800;font-variant-numeric:tabular-nums;}
+  .compare .c-item span{display:block;font-size:11px;color:var(--muted);margin-top:4px;}
+  .compare .arrow{font-size:20px;color:var(--muted);}
+  .delta{font-size:12px;margin-top:6px;text-align:center;}
+  .delta.up{color:#4ade80;}
+  .delta.down{color:#f87171;}
+
+  .footer{display:flex;gap:10px;margin-top:12px;}
+  .footer button{
+    flex:1;padding:13px;border-radius:14px;cursor:pointer;
+    background:var(--card);border:1px solid var(--line);color:var(--muted);
+    font-family:inherit;font-size:13px;
+  }
+  .footer button:active{background:var(--card2);}
+  .tip{margin-top:16px;text-align:center;font-size:11px;color:#4d5f7d;line-height:1.7;}
+  .note{font-size:11px;color:#4d5f7d;margin-top:10px;line-height:1.7;}
+
+  #toast{
+    position:fixed;left:50%;bottom:34px;z-index:200;
+    transform:translate(-50%,16px);
+    padding:11px 20px;border-radius:999px;
+    background:#1f2b44;border:1px solid var(--line);
+    color:var(--text);font-size:14px;
+    opacity:0;pointer-events:none;
+    transition:opacity .22s ease, transform .22s ease;
+    max-width:90vw;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  }
+  #toast.show{opacity:1;transform:translate(-50%,0);}
+
+  .sheet-mask{
+    position:fixed;inset:0;z-index:80;
+    background:rgba(3,7,18,.68);
+    -webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px);
+  }
+  .sheet{
+    position:fixed;left:50%;bottom:0;z-index:90;
+    width:min(100%,520px);
+    max-height:88vh;overflow-y:auto;overscroll-behavior:contain;
+    padding:18px 18px calc(22px + env(safe-area-inset-bottom));
+    background:#121b2b;
+    border-top-left-radius:24px;border-top-right-radius:24px;
+    border-top:1px solid var(--line);
+    animation:sheetIn .24s ease;
+  }
+  @keyframes sheetIn{
+    from{opacity:0;transform:translate(-50%,26px);}
+    to{opacity:1;transform:translate(-50%,0);}
+  }
+  .sheet-head{
+    display:flex;align-items:center;justify-content:space-between;
+    font-size:16px;font-weight:700;margin-bottom:18px;
+  }
+  .sheet-close{
+    width:32px;height:32px;border-radius:50%;border:none;cursor:pointer;
+    background:var(--card2);color:var(--muted);font-size:15px;line-height:1;
+  }
+  .field{margin-bottom:16px;}
+  .field>label{
+    display:block;font-size:12px;color:var(--muted);
+    letter-spacing:.5px;margin-bottom:8px;
+  }
+  .chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:8px;}
+  .chips:empty{display:none;}
+  .chip{
+    padding:8px 14px;border-radius:999px;cursor:pointer;
+    background:var(--card2);border:1px solid var(--line);
+    color:var(--muted);font-family:inherit;font-size:13px;
+    transition:.15s;
+  }
+  .chip:active{transform:scale(.96);}
+  .chip.on{
+    background:rgba(34,197,94,.16);
+    border-color:rgba(34,197,94,.55);
+    color:#7ee2a8;font-weight:600;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="topbar">
+    <div class="brand">🏸 羽毛球打卡</div>
+    <div class="yearnav">
+      <button class="nav-btn" id="prevYear" aria-label="上一年">‹</button>
+      <div class="y" id="yearLabel">2026 年</div>
+      <button class="nav-btn" id="nextYear" aria-label="下一年">›</button>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" data-tab="checkin">打卡</button>
+    <button class="tab" data-tab="stats">统计</button>
+  </div>
+
+  <!-- ==================== 打卡页 ==================== -->
+  <section id="tab-checkin">
+    <div class="hero">
+      <div class="hero-num" id="yearCount">0</div>
+      <div class="hero-label" id="heroLabel">2026 年打球次数</div>
+      <div class="hero-sub" id="heroSub"></div>
+      <button class="checkin-btn" id="checkinBtn">今天打卡</button>
+    </div>
+
+    <div class="stats">
+      <div class="stat"><b id="statMonth">0</b><span>本月次数</span></div>
+      <div class="stat"><b id="statAvg">0</b><span>平均每月</span></div>
+      <div class="stat"><b id="statBest">—</b><span>最活跃月份</span></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">补记某一天</div>
+      <div class="row">
+        <input type="date" id="pickDate">
+        <button class="btn-main" id="pickBtn">填写</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">打卡记录 <em id="recordCount"></em></div>
+      <div id="recordList"></div>
+    </div>
+
+    <div class="footer">
+      <button id="importCalBtn">导入日历 (.ics)</button>
+      <button id="importHealthBtn">导入健康数据</button>
+    </div>
+    <div class="footer">
+      <button id="exportBtn">导出备份</button>
+      <button id="importBtn">导入备份</button>
+    </div>
+  </section>
+
+  <!-- ==================== 统计页 ==================== -->
+  <section id="tab-stats" hidden>
+    <div class="metrics">
+      <div class="metric"><b id="mTotal">0</b><span>年度次数</span></div>
+      <div class="metric"><b id="mHours">0</b><span>总时长</span></div>
+      <div class="metric"><b id="mPerWeek">0</b><span>平均每周</span></div>
+      <div class="metric"><b id="mGap">—</b><span>平均间隔(天)</span></div>
+      <div class="metric"><b id="mMaxStreak">0</b><span>最长连续(天)</span></div>
+      <div class="metric"><b id="mCurStreak">0</b><span>当前连续(天)</span></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">月度分布 <em id="sChartHint"></em></div>
+      <div class="chart" id="sChart"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">星期分布 <em id="weekHint"></em></div>
+      <div class="chart" id="weekChart"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">时段分布 <em id="slotHint"></em></div>
+      <div class="rows" id="slotRows"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">常去场馆 <em id="venueHint"></em></div>
+      <div class="rows" id="venueRows"></div>
+    </div>
+
+    <!-- 运动负荷 -->
+    <div class="card">
+      <div class="card-title">运动负荷 <em id="loadHint"></em></div>
+      <div class="metrics">
+        <div class="metric"><b id="mCal">0</b><span>累计消耗 kcal</span></div>
+        <div class="metric"><b id="mCalPer">0</b><span>平均每次 kcal</span></div>
+        <div class="metric"><b id="mDurPer">0</b><span>平均时长 分</span></div>
+      </div>
+      <div class="metrics">
+        <div class="metric"><b id="mHR">—</b><span>平均心率 bpm</span></div>
+        <div class="metric"><b id="mReal">0</b><span>真实数据 次</span></div>
+        <div class="metric"><b id="mEst">0</b><span>估算数据 次</span></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">月度消耗 <em id="calChartHint"></em></div>
+      <div class="chart" id="calChart"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">时长分布 <em id="durHint"></em></div>
+      <div class="rows" id="durRows"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">强度构成 <em id="intensityHint"></em></div>
+      <div class="rows" id="intensityRows"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">本月 vs 上月</div>
+      <div id="monthCompare"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">小结</div>
+      <div id="insights"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">设置</div>
+      <div class="row">
+        <input type="number" id="weightInput" min="30" max="200" step="1" placeholder="体重 (kg)">
+        <button class="btn-main" id="weightSave">保存</button>
+      </div>
+      <div class="note">
+        体重用于按 MET 公式估算消耗：休闲 5.5 METs、竞技 7.0 METs。
+        有真实健康数据时优先使用真实值，估算值会以「≈」标注。
+      </div>
+    </div>
+  </section>
+
+  <div class="tip">数据仅保存在本机浏览器中<br>建议定期导出备份 · 可「添加到主屏幕」当 App 用</div>
+</div>
+
+<!-- ==================== 打卡弹层 ==================== -->
+<div class="sheet-mask" id="sheetMask" hidden></div>
+<div class="sheet" id="sheet" hidden>
+  <div class="sheet-head">
+    <span id="sheetTitle">新增打卡</span>
+    <button class="sheet-close" id="sheetClose">✕</button>
+  </div>
+
+  <div class="field">
+    <label>日期</label>
+    <input type="date" id="fDate">
+  </div>
+
+  <div class="field">
+    <label>地点</label>
+    <div class="chips" id="venueChips"></div>
+    <input type="text" id="fVenue" placeholder="球馆名称（可留空）" maxlength="20" autocomplete="off">
+  </div>
+
+  <div class="field">
+    <label>时段</label>
+    <div class="chips" id="slotChips"></div>
+  </div>
+
+  <div class="field">
+    <label>强度</label>
+    <div class="chips" id="intensityChips"></div>
+  </div>
+
+  <div class="field">
+    <label>时长（分钟）</label>
+    <div class="chips" id="durChips"></div>
+    <input type="number" id="fDuration" min="0" max="600" step="10" inputmode="numeric" placeholder="自定义">
+  </div>
+
+  <button class="checkin-btn" id="sheetSave">保存打卡</button>
+</div>
+
+<!-- 文件输入 -->
+<input type="file" id="calInput" accept=".ics,text/calendar" hidden>
+<input type="file" id="healthInput" accept=".xml,.json,.csv" hidden>
+<input type="file" id="fileInput" accept=".json,application/json" hidden>
+
+<div id="toast"></div>
+
+<script>
+(function () {
+  'use strict';
+
+  /* ==================== 常量 ==================== */
+  const KEY = 'badminton_checkin_v3';
+  const LEGACY_KEYS = ['badminton_checkin_v2', 'badminton_checkin_v1'];
+  const $ = (s) => document.querySelector(s);
+
+  const SLOTS = {
+    morning:   { label: '上午', icon: '🌅' },
+    afternoon: { label: '下午', icon: '☀️' },
+    evening:   { label: '晚上', icon: '🌙' }
+  };
+  const SLOT_ORDER = ['morning', 'afternoon', 'evening'];
+  const WEEK_CN = ['一', '二', '三', '四', '五', '六', '日'];
+  const DUR_PRESETS = [60, 90, 120, 150];
+
+  const INTENSITY = {
+    casual:      { label: '休闲 / 娱乐', met: 5.5, hr: 130 },
+    competitive: { label: '竞技 / 对抗', met: 7.0, hr: 160 }
+  };
+  const INTENSITY_ORDER = ['casual', 'competitive'];
+
+  const DUR_BUCKETS = [
+    { key: '少于 60', test: d => d > 0 && d < 60 },
+    { key: '60–90',  test: d => d >= 60 && d < 90 },
+    { key: '90–120', test: d => d >= 90 && d < 120 },
+    { key: '120+',   test: d => d >= 120 }
+  ];
+
+  /* ==================== 工具 ==================== */
+  function ymd(d) {
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return y + '-' + m + '-' + day;
+  }
+  function parseYmd(s) {
+    const p = s.split('-').map(Number);
+    return new Date(p[0], p[1] - 1, p[2]);
+  }
+  function dayDiff(a, b) {
+    return Math.round((parseYmd(b) - parseYmd(a)) / 86400000);
+  }
+  function weekdayOf(ds) {
+    return '周' + WEEK_CN[(parseYmd(ds).getDay() + 6) % 7];
+  }
+  function isValidDate(s) {
+    return typeof s === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(s);
+  }
+  function normalizeDate(s) {
+    if (!s) return '';
+    const m = String(s).match(/(\d{4})[-/年.](\d{1,2})[-/月.](\d{1,2})/);
+    if (!m) return '';
+    return m[1] + '-' + m[2].padStart(2, '0') + '-' + m[3].padStart(2, '0');
+  }
+  function esc(s) {
+    return String(s).replace(/[&<>"']/g, c => (
+      { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]
+    ));
+  }
+  function slotOfHour(h) {
+    if (h >= 5 && h < 12) return 'morning';
+    if (h >= 12 && h < 18) return 'afternoon';
+    return 'evening';
+  }
+  function isLeap(y) {
+    return (y % 4 === 0 && y % 100 !== 0) || y % 400 === 0;
+  }
+  function num(v) {
+    return (typeof v === 'number' && isFinite(v)) ? v : null;
+  }
+
+  /* ==================== 状态 ==================== */
+  const NOW = new Date();
+  const TODAY = ymd(NOW);
+  const THIS_YEAR = NOW.getFullYear();
+
+  let records = [];                       // {date, venue, slot, duration, intensity, calories, avgHeartRate, source}
+  let venues = [];
+  let settings = { weight: 65 };
+  let currentYear = THIS_YEAR;
+  let selectedSlot = slotOfHour(NOW.getHours());
+  let selectedIntensity = 'casual';
+  let sheetDate = TODAY;
+
+  /* ==================== 存储 ==================== */
+  function normalizeRecord(r) {
+    return {
+      date: r.date,
+      venue: typeof r.venue === 'string' ? r.venue : '',
+      slot: SLOTS[r.slot] ? r.slot : '',
+      duration: Math.max(0, Math.round(Number(r.duration) || 0)),
+      intensity: INTENSITY[r.intensity] ? r.intensity : 'casual',
+      calories: num(r.calories) != null && r.calories > 0 ? Math.round(r.calories) : null,
+      avgHeartRate: num(r.avgHeartRate) != null && r.avgHeartRate > 0 ? Math.round(r.avgHeartRate) : null,
+      source: typeof r.source === 'string' ? r.source : 'manual'
+    };
+  }
+
+  function loadData() {
+    try {
+      const raw = localStorage.getItem(KEY);
+      if (raw) {
+        const obj = JSON.parse(raw);
+        if (obj && Array.isArray(obj.records)) {
+          records = obj.records.filter(r => r && isValidDate(r.date)).map(normalizeRecord);
+        }
+        if (obj && Array.isArray(obj.venues)) {
+          venues = obj.venues.filter(v => typeof v === 'string');
+        }
+        if (obj && obj.settings) {
+          const w = Number(obj.settings.weight);
+          if (w >= 30 && w <= 200) settings.weight = w;
+        }
+      } else {
+        // 从旧版本迁移
+        for (const k of LEGACY_KEYS) {
+          const oldRaw = localStorage.getItem(k);
+          if (!oldRaw) continue;
+          const old = JSON.parse(oldRaw);
+          const arr = Array.isArray(old) ? old : (old && (old.records || old.dates));
+          if (Array.isArray(arr)) {
+            records = arr.filter(x => x && (typeof x === 'string' ? isValidDate(x) : isValidDate(x.date)))
+              .map(x => normalizeRecord(typeof x === 'string' ? { date: x } : x));
+            if (old && Array.isArray(old.venues)) venues = old.venues;
+          }
+          break;
+        }
+      }
+    } catch (e) {
+      console.warn('读取数据失败', e);
+    }
+    // 同一天只保留一条
+    const map = new Map();
+    records.forEach(r => map.set(r.date, r));
+    records = [...map.values()];
+  }
+
+  function saveData() {
+    try {
+      localStorage.setItem(KEY, JSON.stringify({
+        version: 3, records, venues, settings
+      }));
+    } catch (e) {
+      toast('保存失败，存储空间可能已满');
+    }
+  }
+
+  /* ==================== Toast ==================== */
+  let toastTimer = null;
+  function toast(msg) {
+    const el = $('#toast');
+    el.textContent = msg;
+    el.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => el.classList.remove('show'), 2200);
+  }
+
+  /* ==================== 卡路里 / 心率估算 ==================== */
+  function weight() {
+    const w = Number(settings.weight);
+    return (w >= 30 && w <= 200) ? w : 65;
+  }
+  function estCalories(r) {
+    if (!r.duration) return 0;
+    const met = (INTENSITY[r.intensity] || INTENSITY.casual).met;
+    return Math.round(met * weight() * (r.duration / 60) * 1.05);
+  }
+  function estHR(r) {
+    return (INTENSITY[r.intensity] || INTENSITY.casual).hr;
+  }
+  /** 返回 {value, real} */
+  function calOf(r) {
+    if (r.calories != null) return { value: r.calories, real: true };
+    const v = estCalories(r);
+    return { value: v, real: false };
+  }
+  function hrOf(r) {
+    if (r.avgHeartRate != null) return { value: r.avgHeartRate, real: true };
+    return { value: estHR(r), real: false };
+  }
+
+  /* ==================== 查询辅助 ==================== */
+  function recordsOfYear(y) {
+    const p = y + '-';
+    return records.filter(r => r.date.startsWith(p));
+  }
+  function daysElapsed(y) {
+    if (y < THIS_YEAR) return isLeap(y) ? 366 : 365;
+    if (y > THIS_YEAR) return 0;
+    return Math.floor((parseYmd(TODAY) - new Date(y, 0, 1)) / 86400000) + 1;
+  }
+  function topVenueNames(n) {
+    const m = new Map();
+    records.forEach(r => {
+      if (r.venue) m.set(r.venue, (m.get(r.venue) || 0) + 1);
+    });
+    return [...m.entries()].sort((a, b) => b[1] - a[1]).slice(0, n).map(e => e[0]);
+  }
+
+  /* ==================== 通用柱状图 ==================== */
+  function renderBarChart(el, values, labels, opts) {
+    opts = opts || {};
+    const maxV = Math.max(...values, 1);
+    const colorClass = opts.color || '';
+    const fmt = opts.format || (v => v);
+    el.innerHTML = values.map((c, i) => {
+      const h = c ? Math.max(9, (c / maxV) * 100) : 0;
+      const bar = c
+        ? '<div class="bar ' + colorClass + '" style="height:' + h + '%"><span class="bar-val">' +
+          fmt(c) + '</span></div>'
+        : '<div class="bar empty"></div>';
+      return '<div class="bar-col"><div class="bar-wrap">' + bar + '</div>' +
+             '<div class="bar-month">' + labels[i] + '</div></div>';
+    }).join('');
+  }
+
+  /* ==================== 渲染：打卡页 ==================== */
+  function renderCheckin(list) {
+    const inYear = list.slice().sort((a, b) => a.date.localeCompare(b.date));
+
+    $('#yearLabel').textContent = currentYear + ' 年';
+    $('#yearCount').textContent = inYear.length;
+    $('#heroLabel').textContent = currentYear + ' 年打球次数';
+    $('#nextYear').disabled = currentYear >= THIS_YEAR;
+
+    const todayRec = records.find(r => r.date === TODAY);
+    const btn = $('#checkinBtn');
+    btn.classList.toggle('done', !!todayRec);
+    btn.textContent = todayRec ? '✓ 今天已打卡' : '今天打卡';
+
+    let sub = '';
+    if (todayRec) {
+      const bits = [];
+      if (todayRec.venue) bits.push(todayRec.venue);
+      if (todayRec.slot && SLOTS[todayRec.slot]) bits.push(SLOTS[todayRec.slot].label);
+      if (todayRec.duration) bits.push(todayRec.duration + ' 分钟');
+      sub = '今日已打卡' + (bits.length ? ' · ' + bits.join(' · ') : '');
+    } else {
+      const past = records.map(r => r.date).filter(d => d < TODAY).sort().pop();
+      if (past) {
+        const n = dayDiff(past, TODAY);
+        sub = n === 1 ? '昨天打过球' : '距上次打球 ' + n + ' 天';
+      } else {
+        sub = '还没有记录，开始第一次打卡吧';
+      }
+    }
+    $('#heroSub').textContent = sub;
+
+    const monthPrefix = TODAY.slice(0, 7);
+    $('#statMonth').textContent = records.filter(r => r.date.startsWith(monthPrefix)).length;
+
+    const months = Array(12).fill(0);
+    inYear.forEach(r => { months[+r.date.slice(5, 7) - 1]++; });
+    const maxCount = Math.max(...months);
+
+    const elapsedMonths = currentYear === THIS_YEAR ? NOW.getMonth() + 1 : 12;
+    $('#statAvg').textContent = inYear.length
+      ? (inYear.length / Math.max(1, elapsedMonths)).toFixed(1) : '0';
+    $('#statBest').textContent = maxCount > 0 ? (months.indexOf(maxCount) + 1) + ' 月' : '—';
+
+    renderRecords(list);
+  }
+
+  function renderRecords(list) {
+    const box = $('#recordList');
+    $('#recordCount').textContent = list.length ? list.length + ' 条' : '';
+
+    if (!list.length) {
+      box.innerHTML = '<div class="empty">这一年还没有记录<br>去球场上挥两拍吧 🏸</div>';
+      return;
+    }
+
+    const sorted = list.slice().sort((a, b) => b.date.localeCompare(a.date));
+
+    box.innerHTML = sorted.map(r => {
+      const p = r.date.split('-');
+      const tags = [];
+      if (r.venue) tags.push('<span class="tag venue">' + esc(r.venue) + '</span>');
+      if (r.slot && SLOTS[r.slot]) {
+        tags.push('<span class="tag">' + SLOTS[r.slot].icon + ' ' + SLOTS[r.slot].label + '</span>');
+      }
+      if (r.intensity === 'competitive') tags.push('<span class="tag">竞技</span>');
+      if (r.duration) tags.push('<span class="tag">' + r.duration + ' 分钟</span>');
+
+      const cal = calOf(r);
+      if (cal.value > 0) {
+        tags.push('<span class="tag cal">' + (cal.real ? '' : '≈') + cal.value + ' kcal</span>');
+      }
+      if (r.avgHeartRate != null) {
+        tags.push('<span class="tag hr">♥ ' + r.avgHeartRate + '</span>');
+      }
+      if (r.source === 'health') tags.push('<span class="tag muted">健康数据</span>');
+      if (r.source === 'calendar') tags.push('<span class="tag muted">日历</span>');
+      if (!tags.length) tags.push('<span class="tag muted">未填详情</span>');
+
+      return '<div class="rec-item" data-date="' + r.date + '">' +
+        '<div>' +
+          '<div class="rec-date">' + (+p[1]) + '月' + (+p[2]) + '日' +
+            '<span class="w">' + weekdayOf(r.date) + '</span></div>' +
+          '<div class="rec-meta">' + tags.join('') + '</div>' +
+        '</div>' +
+        '<button class="rec-del" data-date="' + r.date + '" aria-label="删除">×</button>' +
+      '</div>';
+    }).join('');
+  }
+
+  /* ==================== 渲染：统计页 ==================== */
+  function renderStats(list) {
+    const total = list.length;
+    const totalMinutes = list.reduce((s, r) => s + (r.duration || 0), 0);
+    const elapsed = daysElapsed(currentYear);
+    const perWeek = elapsed > 0 ? total / (elapsed / 7) : 0;
+
+    const sortedDates = list.map(r => r.date).sort();
+
+    const gaps = [];
+    for (let i = 1; i < sortedDates.length; i++) {
+      gaps.push(dayDiff(sortedDates[i - 1], sortedDates[i]));
+    }
+    const avgGap = gaps.length
+      ? gaps.reduce((a, b) => a + b, 0) / gaps.length : null;
+
+    let maxStreak = 0, run = 0, prev = null;
+    sortedDates.forEach(d => {
+      run = (prev && dayDiff(prev, d) === 1) ? run + 1 : 1;
+      if (run > maxStreak) maxStreak = run;
+      prev = d;
+    });
+    let curStreak = 0;
+    if (sortedDates.length) {
+      const last = sortedDates[sortedDates.length - 1];
+      if (dayDiff(last, TODAY) <= 1) {
+        curStreak = 1;
+        for (let i = sortedDates.length - 1; i > 0; i--) {
+          if (dayDiff(sortedDates[i - 1], sortedDates[i]) === 1) curStreak++;
+          else break;
+        }
+      }
+    }
+
+    $('#mTotal').innerHTML = total + '<small>次</small>';
+    $('#mHours').innerHTML = totalMinutes
+      ? (totalMinutes / 60).toFixed(1) + '<small>h</small>' : '0<small>h</small>';
+    $('#mPerWeek').innerHTML = perWeek ? perWeek.toFixed(1) + '<small>次</small>' : '0<small>次</small>';
+    $('#mGap').innerHTML = avgGap !== null ? avgGap.toFixed(1) + '<small>天</small>' : '—';
+    $('#mMaxStreak').innerHTML = maxStreak + '<small>天</small>';
+    $('#mCurStreak').innerHTML = curStreak + '<small>天</small>';
+
+    /* ---- 月度 ---- */
+    const months = Array(12).fill(0);
+    list.forEach(r => { months[+r.date.slice(5, 7) - 1]++; });
+    const maxM = Math.max(...months);
+    $('#sChartHint').textContent = total ? '共 ' + total + ' 次' : '';
+    renderBarChart($('#sChart'), months, ['1','2','3','4','5','6','7','8','9','10','11','12'], {});
+
+    /* ---- 星期 ---- */
+    const weekCount = Array(7).fill(0);
+    list.forEach(r => { weekCount[(parseYmd(r.date).getDay() + 6) % 7]++; });
+    const maxW = Math.max(...weekCount);
+    const bestWeekIdx = weekCount.indexOf(maxW);
+    $('#weekHint').textContent = maxW > 0 ? '最常：周' + WEEK_CN[bestWeekIdx] : '';
+    renderBarChart($('#weekChart'), weekCount, WEEK_CN, { color: 'blue' });
+
+    /* ---- 时段 ---- */
+    const slotCount = { morning: 0, afternoon: 0, evening: 0 };
+    let slotKnown = 0;
+    list.forEach(r => {
+      if (r.slot && slotCount[r.slot] !== undefined) { slotCount[r.slot]++; slotKnown++; }
+    });
+    const maxS = Math.max(...Object.values(slotCount));
+    const bestSlot = SLOT_ORDER.reduce((a, b) => slotCount[a] >= slotCount[b] ? a : b);
+
+    $('#slotHint').textContent = slotKnown
+      ? '最常：' + SLOTS[bestSlot].label : (total ? '暂无时段数据' : '');
+
+    if (!slotKnown) {
+      $('#slotRows').innerHTML = '<div class="empty" style="padding:10px 0">暂无时段数据</div>';
+    } else {
+      $('#slotRows').innerHTML = SLOT_ORDER.map(k => {
+        const c = slotCount[k];
+        const pct = maxS ? (c / maxS) * 100 : 0;
+        return '<div class="row-item">' +
+          '<span class="row-name">' + SLOTS[k].icon + ' ' + SLOTS[k].label + '</span>' +
+          '<span class="row-bar"><div style="width:' + pct + '%"></div></span>' +
+          '<span class="row-num">' + c + ' 次</span>' +
+        '</div>';
+      }).join('');
+    }
+
+    /* ---- 场馆 ---- */
+    const venueMap = new Map();
+    list.forEach(r => {
+      const v = r.venue || '未记录';
+      venueMap.set(v, (venueMap.get(v) || 0) + 1);
+    });
+    const topVenues = [...venueMap.entries()].sort((a, b) => b[1] - a[1]).slice(0, 6);
+    const maxV = topVenues.length ? topVenues[0][1] : 0;
+
+    $('#venueHint').textContent = topVenues.length ? 'Top ' + topVenues.length : '';
+
+    if (!topVenues.length) {
+      $('#venueRows').innerHTML = '<div class="empty" style="padding:10px 0">暂无场馆数据</div>';
+    } else {
+      $('#venueRows').innerHTML = topVenues.map(([name, c]) => {
+        const pct = maxV ? (c / maxV) * 100 : 0;
+        return '<div class="row-item">' +
+          '<span class="row-name" title="' + esc(name) + '">' + esc(name) + '</span>' +
+          '<span class="row-bar"><div style="width:' + pct + '%"></div></span>' +
+          '<span class="row-num">' + c + ' 次</span>' +
+        '</div>';
+      }).join('');
+    }
+
+    /* ---- 运动负荷 ---- */
+    let totalCal = 0, realCalCount = 0, estCalCount = 0;
+    let hrSum = 0, hrCount = 0, realHrCount = 0;
+    let durSum = 0, durCount = 0;
+
+    list.forEach(r => {
+      const cal = calOf(r);
+      if (cal.value > 0) {
+        totalCal += cal.value;
+        if (cal.real) realCalCount++; else estCalCount++;
+      }
+      if (r.duration > 0) { durSum += r.duration; durCount++; }
+      const hr = hrOf(r);
+      if (hr.value > 0) { hrSum += hr.value; hrCount++; if (hr.real) realHrCount++; }
+    });
+
+    const avgCal = total > 0 ? Math.round(totalCal / total) : 0;
+    const avgDur = durCount > 0 ? Math.round(durSum / durCount) : 0;
+    const avgHR = hrCount > 0 ? Math.round(hrSum / hrCount) : null;
+
+    $('#mCal').innerHTML = totalCal > 0
+      ? (estCalCount > 0 && realCalCount === 0 ? '≈' : '') + totalCal + '<small>kcal</small>' : '0';
+    $('#mCalPer').innerHTML = avgCal ? avgCal + '<small>kcal</small>' : '0';
+    $('#mDurPer').innerHTML = avgDur ? avgDur + '<small>分</small>' : '0';
+    $('#mHR').innerHTML = avgHR ? avgHR + '<small>bpm</small>' : '—';
+    $('#mReal').innerHTML = realCalCount + '<small>次</small>';
+    $('#mEst').innerHTML = estCalCount + '<small>次</small>';
+
+    $('#loadHint').textContent = realCalCount > 0
+      ? '真实 ' + realCalCount + ' · 估算 ' + estCalCount
+      : (estCalCount > 0 ? '全部为估算值' : '');
+
+    /* ---- 月度消耗 ---- */
+    const monthCal = Array(12).fill(0);
+    list.forEach(r => {
+      const c = calOf(r).value;
+      if (c > 0) monthCal[+r.date.slice(5, 7) - 1] += c;
+    });
+    const maxMC = Math.max(...monthCal);
+    $('#calChartHint').textContent = totalCal > 0
+      ? (realCalCount ? '≈' : '≈') + totalCal + ' kcal' : '';
+    renderBarChart($('#calChart'), monthCal,
+      ['1','2','3','4','5','6','7','8','9','10','11','12'],
+      { color: 'amber', format: v => v >= 1000 ? (v / 1000).toFixed(1) + 'k' : v });
+
+    /* ---- 时长分布 ---- */
+    const durCounts = DUR_BUCKETS.map(() => 0);
+    let durUnknown = 0;
+    list.forEach(r => {
+      if (!r.duration) { durUnknown++; return; }
+      const i = DUR_BUCKETS.findIndex(b => b.test(r.duration));
+      if (i >= 0) durCounts[i]++;
+    });
+    const maxD = Math.max(...durCounts, 1);
+    $('#durHint').textContent = durUnknown ? '未填 ' + durUnknown + ' 次' : '';
+    if (!durCounts.some(c => c > 0)) {
+      $('#durRows').innerHTML = '<div class="empty" style="padding:10px 0">暂无时长数据</div>';
+    } else {
+      $('#durRows').innerHTML = DUR_BUCKETS.map((b, i) => {
+        const c = durCounts[i];
+        const pct = (c / maxD) * 100;
+        return '<div class="row-item">' +
+          '<span class="row-name">' + b.key + ' 分</span>' +
+          '<span class="row-bar"><div class="blue" style="width:' + pct + '%"></div></span>' +
+          '<span class="row-num">' + c + ' 次</span>' +
+        '</div>';
+      }).join('');
+    }
+
+    /* ---- 强度构成 ---- */
+    const intCount = { casual: 0, competitive: 0 };
+    list.forEach(r => { intCount[r.intensity || 'casual']++; });
+    const intTotal = intCount.casual + intCount.competitive;
+    const maxI = Math.max(intCount.casual, intCount.competitive, 1);
+    $('#intensityHint').textContent = intTotal ? '共 ' + intTotal + ' 次' : '';
+    if (!intTotal) {
+      $('#intensityRows').innerHTML = '<div class="empty" style="padding:10px 0">暂无强度数据</div>';
+    } else {
+      $('#intensityRows').innerHTML = INTENSITY_ORDER.map(k => {
+        const c = intCount[k];
+        const pct = (c / maxI) * 100;
+        const share = Math.round(c / intTotal * 100);
+        return '<div class="row-item">' +
+          '<span class="row-name">' + INTENSITY[k].label.split(' / ')[0] + '</span>' +
+          '<span class="row-bar"><div class="' + (k === 'competitive' ? 'amber' : '') +
+            '" style="width:' + pct + '%"></div></span>' +
+          '<span class="row-num">' + c + ' 次 · ' + share + '%</span>' +
+        '</div>';
+      }).join('');
+    }
+
+    /* ---- 本月 vs 上月 ---- */
+    const thisMonthKey = TODAY.slice(0, 7);
+    const lastMonthDate = new Date(NOW.getFullYear(), NOW.getMonth() - 1, 1);
+    const lastMonthKey = ymd(lastMonthDate).slice(0, 7);
+    const thisM = records.filter(r => r.date.startsWith(thisMonthKey)).length;
+    const lastM = records.filter(r => r.date.startsWith(lastMonthKey)).length;
+    const diffM = thisM - lastM;
+
+    let deltaHtml = '';
+    if (diffM > 0) deltaHtml = '<div class="delta up">↑ 比上月多 ' + diffM + ' 次</div>';
+    else if (diffM < 0) deltaHtml = '<div class="delta down">↓ 比上月少 ' + (-diffM) + ' 次</div>';
+    else deltaHtml = '<div class="delta" style="color:#8b9bb8">与上月持平</div>';
+
+    $('#monthCompare').innerHTML =
+      '<div class="compare">' +
+        '<div class="c-item"><b>' + thisM + '</b><span>' + (NOW.getMonth() + 1) + ' 月</span></div>' +
+        '<div class="arrow">↔</div>' +
+        '<div class="c-item"><b>' + lastM + '</b><span>' + (lastMonthDate.getMonth() + 1) + ' 月</span></div>' +
+      '</div>' + deltaHtml;
+
+    /* ---- 小结 ---- */
+    const insights = [];
+    if (total === 0) {
+      insights.push('这一年还没有打球记录，快去球场活动一下吧。');
+    } else {
+      if (topVenues.length && topVenues[0][0] !== '未记录') {
+        const pct = Math.round(topVenues[0][1] / total * 100);
+        insights.push('最常去 <b>' + esc(topVenues[0][0]) + '</b>，共 ' +
+          topVenues[0][1] + ' 次，占比 ' + pct + '%。');
+      }
+      if (slotKnown) {
+        insights.push('最常在 <b>' + SLOTS[bestSlot].label + '</b> 打球，共 ' +
+          slotCount[bestSlot] + ' 次。');
+      }
+      if (maxW > 0) {
+        insights.push('最活跃的星期是 <b>周' + WEEK_CN[bestWeekIdx] + '</b>，共 ' +
+          maxW + ' 次。');
+      }
+      if (avgGap !== null) {
+        insights.push('平均每 <b>' + avgGap.toFixed(1) + '</b> 天打一次球。');
+      }
+      if (totalMinutes) {
+        insights.push('累计打球 <b>' + (totalMinutes / 60).toFixed(1) +
+          '</b> 小时，平均每次 ' + Math.round(totalMinutes / total) + ' 分钟。');
+      }
+      if (totalCal > 0) {
+        insights.push('累计消耗约 <b>' + totalCal + '</b> kcal，平均每次 <b>' +
+          avgCal + '</b> kcal' + (estCalCount > 0 ? '（含 ' + estCalCount + ' 次估算）' : '') + '。');
+      }
+      if (avgHR) {
+        insights.push('平均心率约 <b>' + avgHR + '</b> bpm' +
+          (realHrCount > 0 ? '（基于 ' + realHrCount + ' 次真实心率）' : '（估算值）') + '。');
+      }
+    }
+    $('#insights').innerHTML = insights.map(t =>
+      '<div class="insight"><span class="dot"></span><span>' + t + '</span></div>'
+    ).join('');
+
+    /* ---- 设置 ---- */
+    $('#weightInput').value = weight();
+  }
+
+  /* ==================== 主渲染 ==================== */
+  function render() {
+    const list = recordsOfYear(currentYear);
+    renderCheckin(list);
+    renderStats(list);
+  }
+
+  /* ==================== 弹层 ==================== */
+  function renderVenueChips() {
+    const cur = $('#fVenue').value.trim();
+    const names = topVenueNames(6);
+    if (!names.length) { $('#venueChips').innerHTML = ''; return; }
+    $('#venueChips').innerHTML = names.map(v =>
+      '<button type="button" class="chip' + (v === cur ? ' on' : '') +
+      '" data-venue="' + esc(v) + '">' + esc(v) + '</button>'
+    ).join('');
+  }
+  function renderSlotChips() {
+    $('#slotChips').innerHTML = SLOT_ORDER.map(k =>
+      '<button type="button" class="chip' + (k === selectedSlot ? ' on' : '') +
+      '" data-slot="' + k + '">' + SLOTS[k].icon + ' ' + SLOTS[k].label + '</button>'
+    ).join('');
+  }
+  function renderIntensityChips() {
+    $('#intensityChips').innerHTML = INTENSITY_ORDER.map(k =>
+      '<button type="button" class="chip' + (k === selectedIntensity ? ' on' : '') +
+      '" data-intensity="' + k + '">' + INTENSITY[k].label + '</button>'
+    ).join('');
+  }
+  function renderDurChips() {
+    const cur = parseInt($('#fDuration').value, 10) || 0;
+    $('#durChips').innerHTML = DUR_PRESETS.map(v =>
+      '<button type="button" class="chip' + (v === cur ? ' on' : '') +
+      '" data-dur="' + v + '">' + v + '</button>'
+    ).join('');
+  }
+
+  function openSheet(date) {
+    const ds = date || TODAY;
+    sheetDate = ds;
+    const existing = records.find(r => r.date === ds);
+
+    $('#sheetTitle').textContent = existing ? '编辑打卡' : '新增打卡';
+    $('#fDate').value = ds;
+    $('#fVenue').value = existing ? (existing.venue || '') : '';
+    $('#fDuration').value = existing && existing.duration ? existing.duration : 90;
+    selectedSlot = existing && existing.slot && SLOTS[existing.slot]
+      ? existing.slot
+      : (ds === TODAY ? slotOfHour(new Date().getHours()) : 'evening');
+    selectedIntensity = existing && INTENSITY[existing.intensity]
+      ? existing.intensity : 'casual';
+
+    renderVenueChips();
+    renderSlotChips();
+    renderIntensityChips();
+    renderDurChips();
+
+    $('#sheetMask').hidden = false;
+    $('#sheet').hidden = false;
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeSheet() {
+    $('#sheetMask').hidden = true;
+    $('#sheet').hidden = true;
+    document.body.style.overflow = '';
+  }
+
+  function saveSheet() {
+    const date = $('#fDate').value;
+    if (!isValidDate(date)) { toast('请选择有效日期'); return; }
+    if (date > TODAY) { toast('不能记录未来的日期'); return; }
+
+    const existed = records.some(r => r.date === date);
+    if (existed && date !== sheetDate && !confirm(date + ' 已有记录，要覆盖吗？')) return;
+
+    const venue = $('#fVenue').value.trim().slice(0, 20);
+    let duration = parseInt($('#fDuration').value, 10);
+    if (!isFinite(duration) || duration < 0) duration = 0;
+    duration = Math.min(duration, 600);
+
+    const old = records.find(r => r.date === date);
+    records = records.filter(r => r.date !== date);
+    records.push({
+      date, venue, slot: selectedSlot, duration,
+      intensity: selectedIntensity,
+      // 手动编辑时保留已有的真实健康数据
+      calories: old ? old.calories : null,
+      avgHeartRate: old ? old.avgHeartRate : null,
+      source: old && old.source === 'health' ? 'health' : 'manual'
+    });
+
+    if (venue && !venues.includes(venue)) venues.push(venue);
+
+    saveData();
+    if (+date.slice(0, 4) !== currentYear) currentYear = +date.slice(0, 4);
+
+    closeSheet();
+    render();
+    toast((existed ? '已更新 ' : '已记录 ') + date);
+  }
+
+  /* ==================== 日历 (.ics) 解析 ==================== */
+  function unfoldICS(text) {
+    const lines = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n');
+    const out = [];
+    for (const line of lines) {
+      if (/^[ \t]/.test(line) && out.length) {
+        out[out.length - 1] += line.slice(1);
+      } else {
+        out.push(line);
+      }
+    }
+    return out;
+  }
+
+  function parseDtstart(value) {
+    if (!value) return null;
+    const m = value.match(/^(\d{4})(\d{2})(\d{2})(?:T(\d{2})(\d{2})(\d{2})?(Z)?)?/);
+    if (!m) return null;
+
+    let date = m[1] + '-' + m[2] + '-' + m[3];
+    let slot = '';
+
+    if (m[4]) {
+      const h = +m[4], mi = +m[5], s = m[6] ? +m[6] : 0;
+      if (m[7] === 'Z') {
+        // UTC → 本地时间
+        const dt = new Date(Date.UTC(+m[1], +m[2] - 1, +m[3], h, mi, s));
+        date = ymd(dt);
+        slot = slotOfHour(dt.getHours());
+      } else {
+        slot = slotOfHour(h);
+      }
+    }
+    return isValidDate(date) ? { date, slot } : null;
+  }
+
+  function parseICS(text) {
+    const lines = unfoldICS(text);
+    const items = [];
+    let cur = null;
+
+    for (const line of lines) {
+      if (line === 'BEGIN:VEVENT') { cur = {}; continue; }
+      if (line === 'END:VEVENT') {
+        if (cur) {
+          const summary = cur.SUMMARY || '';
+          const dtstart = parseDtstart(cur.DTSTART);
+          if (dtstart && /羽毛球|badminton/i.test(summary)) {
+            items.push({
+              date: dtstart.date,
+              slot: dtstart.slot,
+              venue: cleanLocation(cur.LOCATION || ''),
+              duration: guessDuration(cur.DESCRIPTION || '', summary),
+              intensity: guessIntensity(summary + ' ' + (cur.DESCRIPTION || '')),
+              source: 'calendar'
+            });
+          }
+        }
+        cur = null;
+        continue;
+      }
+      if (!cur) continue;
+
+      const idx = line.indexOf(':');
+      if (idx < 0) continue;
+      const keyPart = line.slice(0, idx);
+      const val = line.slice(idx + 1);
+      const key = keyPart.split(';')[0].toUpperCase();
+      if (key === 'SUMMARY' || key === 'DTSTART' || key === 'LOCATION' || key === 'DESCRIPTION') {
+        cur[key] = val;
+      }
+    }
+    return items;
+  }
+
+  function cleanLocation(v) {
+    return String(v).replace(/\\n|\\,/g, ' ').replace(/\\[;\\]/g, '').trim().slice(0, 20);
+  }
+  function guessDuration(desc, summary) {
+    const text = desc + ' ' + summary;
+    const m = text.match(/(\d+(?:\.\d+)?)\s*(小时|h|分钟|min)/i);
+    if (m) {
+      const n = parseFloat(m[1]);
+      return /小时|h/i.test(m[2]) ? Math.round(n * 60) : Math.round(n);
+    }
+    return 90;
+  }
+  function guessIntensity(text) {
+    return /比赛|对抗|竞技|match|competition|tournament/i.test(text)
+      ? 'competitive' : 'casual';
+  }
+
+  /* ==================== 健康数据解析 ==================== */
+  const isBadmintonType = (t) => /Badminton/i.test(t || '');
+
+  function parseWorkoutBlock(block) {
+    const open = block.match(/<Workout\b([^>]*)>/);
+    if (!open) return null;
+
+    const attrs = {};
+    open[1].replace(/([\w:]+)="([^"]*)"/g, (_, k, v) => { attrs[k] = v; return ''; });
+
+    if (!isBadmintonType(attrs.workoutActivityType)) return null;
+
+    // 日期
+    const start = attrs.startDate || '';
+    const dm = start.match(/(\d{4})-(\d{2})-(\d{2})[ T](\d{2}):(\d{2})/);
+    if (!dm) return null;
+    const date = dm[1] + '-' + dm[2] + '-' + dm[3];
+    if (!isValidDate(date)) return null;
+    const slot = slotOfHour(+dm[4]);
+
+    // 时长
+    let duration = 0;
+    if (attrs.duration) {
+      const d = parseFloat(attrs.duration);
+      const unit = (attrs.durationUnit || 'min').toLowerCase();
+      if (unit.indexOf('h') === 0) duration = d * 60;
+      else if (unit.indexOf('s') === 0) duration = d / 60;
+      else duration = d;
+    }
+
+    // 卡路里 & 心率
+    let calories = attrs.totalEnergyBurned ? Math.round(parseFloat(attrs.totalEnergyBurned)) : null;
+    if (!(calories > 0)) calories = null;
+
+    let hr = null;
+    const statRe = /<WorkoutStatistics\b([^>]*?)\/?>/g;
+    let sm;
+    while ((sm = statRe.exec(block))) {
+      const sa = {};
+      sm[1].replace(/([\w:]+)="([^"]*)"/g, (_, k, v) => { sa[k] = v; return ''; });
+      const type = sa.type || '';
+      if (/HeartRate/i.test(type) && sa.average) {
+        const v = parseFloat(sa.average);
+        if (v > 0) hr = Math.round(v);
+      }
+      if (/EnergyBurned/i.test(type)) {
+        if (sa.sum) {
+          const v = parseFloat(sa.sum);
+          if (v > 0) calories = Math.round(v);
+        } else if (sa.average && !(calories > 0)) {
+          const v = parseFloat(sa.average);
+          if (v > 0) calories = Math.round(v);
+        }
+      }
+    }
+
+    return {
+      date,
+      slot,
+      duration: Math.max(0, Math.round(duration)),
+      calories,
+      avgHeartRate: hr,
+      intensity: '',
+      source: 'health'
+    };
+  }
+
+  /** 流式解析 Apple 健康 export.xml，只提取羽毛球 Workout */
+  async function parseAppleHealthXML(file, onProgress) {
+    const CHUNK = 8 * 1024 * 1024;
+    const found = [];
+    let buffer = '';
+    let offset = 0;
+    const END = '</Workout>';
+
+    while (offset < file.size) {
+      const text = await file.slice(offset, offset + CHUNK).text();
+      offset += CHUNK;
+      buffer += text;
+
+      let idx;
+      while ((idx = buffer.indexOf(END)) !== -1) {
+        const end = idx + END.length;
+        const startTag = buffer.lastIndexOf('<Workout', idx);
+        if (startTag === -1) { buffer = buffer.slice(end); continue; }
+
+        const block = buffer.slice(startTag, end);
+        const w = parseWorkoutBlock(block);
+        if (w) found.push(w);
+
+        buffer = buffer.slice(end);
+
+        // 防止 buffer 无限增长
+        if (buffer.length > CHUNK * 2) {
+          const lastOpen = buffer.lastIndexOf('<Workout');
+          buffer = lastOpen === -1 ? '' : buffer.slice(lastOpen);
+        }
+      }
+      if (onProgress) onProgress(Math.min(1, offset / file.size));
+      // 让出主线程，避免界面卡死
+      if (offset % (CHUNK * 4) === 0) await new Promise(r => setTimeout(r, 0));
+    }
+    return found;
+  }
+
+  function parseHealthJSON(text) {
+    const obj = JSON.parse(text);
+    const arr = Array.isArray(obj) ? obj : (obj && obj.records);
+    if (!Array.isArray(arr)) throw new Error('JSON 格式不正确');
+
+    return arr.map(r => {
+      if (!r) return null;
+      const date = isValidDate(r.date) ? r.date : normalizeDate(r.date || r.startDate || '');
+      if (!isValidDate(date)) return null;
+      const calories = num(r.calories) != null ? r.calories
+        : (num(r.totalEnergyBurned) != null ? r.totalEnergyBurned : null);
+      const hr = num(r.avgHeartRate) != null ? r.avgHeartRate
+        : (num(r.heartRate) != null ? r.heartRate : (num(r.averageHeartRate) != null ? r.averageHeartRate : null));
+      return {
+        date,
+        duration: Math.max(0, Math.round(Number(r.duration) || 0)),
+        calories: calories != null && calories > 0 ? Math.round(calories) : null,
+        avgHeartRate: hr != null && hr > 0 ? Math.round(hr) : null,
+        intensity: INTENSITY[r.intensity] ? r.intensity : '',
+        slot: SLOTS[r.slot] ? r.slot : '',
+        source: 'health'
+      };
+    }).filter(Boolean);
+  }
+
+  function parseHealthCSV(text) {
+    const lines = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n').filter(l => l.trim());
+    if (!lines.length) return [];
+
+    const header = lines[0].split(',').map(s => s.trim().toLowerCase());
+    const findIdx = (names) => header.findIndex(h => names.indexOf(h) >= 0);
+
+    const iDate = findIdx(['date', '日期', 'startdate', 'start']);
+    const iDur = findIdx(['duration', '时长', 'minutes', 'min', '分钟']);
+    const iCal = findIdx(['calories', 'kcal', '卡路里', '能量', 'totalenergyburned', 'activeenergyburned']);
+    const iHR = findIdx(['avgheartrate', 'heartrate', '心率', 'hr', 'averageheartrate']);
+
+    if (iDate === -1) throw new Error('CSV 缺少 date 列');
+
+    return lines.slice(1).map(line => {
+      const c = line.split(',').map(s => s.trim());
+      const date = normalizeDate(c[iDate]);
+      if (!isValidDate(date)) return null;
+      const cal = iCal >= 0 ? parseFloat(c[iCal]) : NaN;
+      const hr = iHR >= 0 ? parseFloat(c[iHR]) : NaN;
+      return {
+        date,
+        duration: iDur >= 0 ? Math.max(0, Math.round(parseFloat(c[iDur]) || 0)) : 0,
+        calories: cal > 0 ? Math.round(cal) : null,
+        avgHeartRate: hr > 0 ? Math.round(hr) : null,
+        intensity: '',
+        slot: '',
+        source: 'health'
+      };
+    }).filter(Boolean);
+  }
+
+  /* ==================== 合并导入数据 ==================== */
+  function mergeImported(items, opts) {
+    const isHealth = !!(opts && opts.health);
+    let added = 0, updated = 0, skipped = 0;
+
+    items.forEach(it => {
+      if (!isValidDate(it.date) || it.date > TODAY) { skipped++; return; }
+      const existing = records.find(r => r.date === it.date);
+
+      if (existing) {
+        let changed = false;
+        if (it.calories != null) { existing.calories = it.calories; changed = true; }
+        if (it.avgHeartRate != null) { existing.avgHeartRate = it.avgHeartRate; changed = true; }
+        if (it.duration && !existing.duration) { existing.duration = it.duration; changed = true; }
+        if (it.slot && !existing.slot) { existing.slot = it.slot; changed = true; }
+        if (it.venue && !existing.venue) { existing.venue = it.venue; changed = true; }
+        if (it.intensity && INTENSITY[it.intensity]) { existing.intensity = it.intensity; changed = true; }
+        if (isHealth && (it.calories != null || it.avgHeartRate != null)) {
+          existing.source = 'health';
+          changed = true;
+        }
+        if (changed) updated++; else skipped++;
+      } else {
+        records.push(normalizeRecord({
+          date: it.date,
+          venue: it.venue || '',
+          slot: it.slot || '',
+          duration: it.duration || 0,
+          intensity: it.intensity || 'casual',
+          calories: it.calories != null ? it.calories : null,
+          avgHeartRate: it.avgHeartRate != null ? it.avgHeartRate : null,
+          source: it.source || (isHealth ? 'health' : 'calendar')
+        }));
+        if (it.venue && !venues.includes(it.venue)) venues.push(it.venue);
+        added++;
+      }
+    });
+
+    return { added, updated, skipped };
+  }
+
+  /* ==================== 事件绑定 ==================== */
+  function bindEvents() {
+
+    document.querySelectorAll('.tab').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.tab').forEach(b =>
+          b.classList.toggle('active', b === btn));
+        const tab = btn.dataset.tab;
+        $('#tab-checkin').hidden = tab !== 'checkin';
+        $('#tab-stats').hidden = tab !== 'stats';
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      });
+    });
+
+    $('#prevYear').addEventListener('click', () => { currentYear--; render(); });
+    $('#nextYear').addEventListener('click', () => {
+      if (currentYear >= THIS_YEAR) return;
+      currentYear++;
+      render();
+    });
+
+    $('#checkinBtn').addEventListener('click', () => openSheet(TODAY));
+
+    $('#pickBtn').addEventListener('click', () => {
+      const v = $('#pickDate').value;
+      if (!v) { toast('请先选择日期'); return; }
+      if (v > TODAY) { toast('不能补记未来的日期'); return; }
+      openSheet(v);
+    });
+
+    $('#recordList').addEventListener('click', (e) => {
+      const del = e.target.closest('.rec-del');
+      if (del) {
+        e.stopPropagation();
+        const date = del.dataset.date;
+        if (confirm('删除 ' + date + ' 的打卡记录？')) {
+          records = records.filter(r => r.date !== date);
+          saveData();
+          render();
+          toast('已删除');
+        }
+        return;
+      }
+      const item = e.target.closest('.rec-item');
+      if (item) openSheet(item.dataset.date);
+    });
+
+    $('#sheetClose').addEventListener('click', closeSheet);
+    $('#sheetMask').addEventListener('click', closeSheet);
+
+    $('#venueChips').addEventListener('click', (e) => {
+      const chip = e.target.closest('.chip');
+      if (!chip) return;
+      $('#fVenue').value = chip.dataset.venue;
+      renderVenueChips();
+    });
+    $('#fVenue').addEventListener('input', renderVenueChips);
+
+    $('#slotChips').addEventListener('click', (e) => {
+      const chip = e.target.closest('.chip');
+      if (!chip) return;
+      selectedSlot = chip.dataset.slot;
+      renderSlotChips();
+    });
+
+    $('#intensityChips').addEventListener('click', (e) => {
+      const chip = e.target.closest('.chip');
+      if (!chip) return;
+      selectedIntensity = chip.dataset.intensity;
+      renderIntensityChips();
+    });
+
+    $('#durChips').addEventListener('click', (e) => {
+      const chip = e.target.closest('.chip');
+      if (!chip) return;
+      $('#fDuration').value = chip.dataset.dur;
+      renderDurChips();
+    });
+    $('#fDuration').addEventListener('input', renderDurChips);
+
+    $('#sheetSave').addEventListener('click', saveSheet);
+
+    $('#fDate').addEventListener('change', () => {
+      const ds = $('#fDate').value;
+      if (!isValidDate(ds)) return;
+      const existing = records.find(r => r.date === ds);
+      $('#sheetTitle').textContent = existing ? '编辑打卡' : '新增打卡';
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && !$('#sheet').hidden) closeSheet();
+    });
+
+    /* ---- 导入日历 ---- */
+    $('#importCalBtn').addEventListener('click', () => $('#calInput').click());
+
+    $('#calInput').addEventListener('change', (e) => {
+      const file = e.target.files && e.target.files[0];
+      e.target.value = '';
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = () => {
+        try {
+          const items = parseICS(String(reader.result));
+          if (!items.length) throw new Error('没有找到含「羽毛球」的日程');
+          const res = mergeImported(items, { health: false });
+          saveData();
+          currentYear = THIS_YEAR;
+          render();
+          toast('日历导入完成：新增 ' + res.added + '，更新 ' + res.updated + '，跳过 ' + res.skipped);
+        } catch (err) {
+          toast('导入失败：' + err.message);
+        }
+      };
+      reader.onerror = () => toast('读取文件失败');
+      reader.readAsText(file);
+    });
+
+    /* ---- 导入健康数据 ---- */
+    $('#importHealthBtn').addEventListener('click', () => $('#healthInput').click());
+
+    $('#healthInput').addEventListener('change', async (e) => {
+      const file = e.target.files && e.target.files[0];
+      e.target.value = '';
+      if (!file) return;
+
+      const name = file.name.toLowerCase();
+      toast('正在解析健康数据…');
+
+      try {
+        let items = [];
+
+        if (name.endsWith('.xml')) {
+          if (file.size > 300 * 1024 * 1024) {
+            if (!confirm('文件约 ' + (file.size / 1048576).toFixed(0) +
+              ' MB，解析可能需要较长时间，继续吗？')) return;
+          }
+          items = await parseAppleHealthXML(file);
+        } else if (name.endsWith('.json')) {
+          const text = await file.text();
+          items = parseHealthJSON(text);
+        } else if (name.endsWith('.csv')) {
+          const text = await file.text();
+          items = parseHealthCSV(text);
+        } else {
+          throw new Error('请选择 .xml / .json / .csv 文件');
+        }
+
+        if (!items.length) throw new Error('没有找到羽毛球运动记录');
+
+        const res = mergeImported(items, { health: true });
+        saveData();
+        currentYear = THIS_YEAR;
+        render();
+        toast('健康数据导入完成：新增 ' + res.added + '，更新 ' + res.updated + '，跳过 ' + res.skipped);
+      } catch (err) {
+        toast('导入失败：' + err.message);
+      }
+    });
+
+    /* ---- 导出备份 ---- */
+    $('#exportBtn').addEventListener('click', () => {
+      if (!records.length) { toast('还没有记录可导出'); return; }
+      const data = JSON.stringify({
+        version: 3,
+        exportedAt: new Date().toISOString(),
+        records, venues, settings
+      }, null, 2);
+      const blob = new Blob([data], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = '羽毛球打卡备份_' + TODAY + '.json';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+      toast('备份已导出');
+    });
+
+    /* ---- 导入备份 ---- */
+    $('#importBtn').addEventListener('click', () => $('#fileInput').click());
+
+    $('#fileInput').addEventListener('change', (e) => {
+      const file = e.target.files && e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        try {
+          const obj = JSON.parse(reader.result);
+          const arr = Array.isArray(obj) ? obj : (obj && obj.records);
+          if (!Array.isArray(arr)) throw new Error('文件格式不正确');
+
+          const clean = arr
+            .filter(r => r && isValidDate(r.date))
+            .map(normalizeRecord);
+
+          if (!clean.length) throw new Error('文件里没有有效记录');
+          if (!confirm('将导入 ' + clean.length + ' 条记录，并覆盖当前所有数据，确定吗？')) return;
+
+          records = clean;
+          if (obj && Array.isArray(obj.venues)) {
+            venues = obj.venues.filter(v => typeof v === 'string');
+          }
+          if (obj && obj.settings) {
+            const w = Number(obj.settings.weight);
+            if (w >= 30 && w <= 200) settings.weight = w;
+          }
+          saveData();
+          currentYear = THIS_YEAR;
+          render();
+          toast('导入成功，共 ' + clean.length + ' 条');
+        } catch (err) {
+          toast('导入失败：' + err.message);
+        }
+      };
+      reader.readAsText(file);
+      e.target.value = '';
+    });
+
+    /* ---- 体重设置 ---- */
+    $('#weightSave').addEventListener('click', () => {
+      const v = Number($('#weightInput').value);
+      if (!(v >= 30 && v <= 200)) { toast('请输入 30–200 之间的体重'); return; }
+      settings.weight = v;
+      saveData();
+      render();
+      toast('体重已保存为 ' + v + ' kg');
+    });
+  }
+
+  /* ==================== 初始化 ==================== */
+  function init() {
+    $('#fDate').max = TODAY;
+    $('#pickDate').max = TODAY;
+    $('#pickDate').value = ymd(new Date(Date.now() - 86400000));
+
+    loadData();
+    bindEvents();
+    render();
+  }
+
+  init();
+})();
+</script>
+</body>
+</html>
